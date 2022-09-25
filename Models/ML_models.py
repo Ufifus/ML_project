@@ -24,17 +24,18 @@ models = {
 
 def preprocess_data(data, target, labels):
     dataset = None
-    use_columns = 0
     for label in labels:
         if labels[label]['use'] == False:
             print('Not Use --> ', label)
         else:
             column = data[label].copy()
             if labels[label]['type'] == 1:
+                column.fillna(column.median(), inplace=True)
                 mean = column.mean()
                 print('mean = ', mean)
                 column = column / mean
             else:
+                column.fillna(column.mode().values[0], inplace=True)
                 categ_list = {category: i for i, category in enumerate(data[label].unique().tolist())}
                 column = column.replace(categ_list)
                 print(categ_list)

@@ -90,14 +90,14 @@ def update_params():
     return None
 
 
-def delete_rows(delete_labels, change_labels):
+def delete_rows(delete_labels):
     print(delete_labels)
     st.session_state.data = st.session_state.data.dropna(subset=delete_labels)
-    for label in change_labels:
-        if st.session_state.labels[label]['type'] == 1:
-            st.session_state.data[label].fillna(st.session_state.data[label].median(), inplace=True)
-        if st.session_state.labels[label]['type'] == 0:
-            st.session_state.data[label].fillna(st.session_state.data[label].mode().values[0], inplace=True)
+    # for label in st.session_state.labels:
+    #     if st.session_state.labels[label]['type'] == 1:
+    #         st.session_state.data[label].fillna(st.session_state.data[label].median(), inplace=True)
+    #     if st.session_state.labels[label]['type'] == 0:
+    #         st.session_state.data[label].fillna(st.session_state.data[label].mode().values[0], inplace=True)
     st.session_state.labels = sort_data(st.session_state.data, st.session_state.labels)
 
     natable = Visual.NaTable()
@@ -186,10 +186,10 @@ if __name__ == '__main__':
             delete_choices = st.multiselect('Choice that row with clear slots delete',
                                             [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
                                              labels[label]['use'] == True])
-            change_choices = st.multiselect('Choice that row with clear slots fill',
-                                            [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
-                                             labels[label]['use'] == True])
-            st.form_submit_button('Clear or change data', on_click=delete_rows(delete_choices, change_choices))
+            # change_choices = st.multiselect('Choice that row with clear slots fill',
+            #                                 [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
+            #                                  labels[label]['use'] == True])
+            st.form_submit_button('Clear or change data', on_click=delete_rows(delete_choices))
 
         with st.form(key='Ml_model'):
             y_label = st.selectbox('Choice label for predict', [None] + [label for label in st.session_state.data.columns])
