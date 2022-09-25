@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 models = {
-    'SVM': SVC(),
+    'SVM': SVC(probability=True),
     'Decision Tree': DecisionTreeClassifier(),
     'Random Forest': RandomForestClassifier(),
     'Logistic Regression': LogisticRegression(max_iter=200),
