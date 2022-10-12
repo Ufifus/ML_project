@@ -1,10 +1,53 @@
 import streamlit as st
 import pandas as pd
+from PIL import Image
+import base64
 
 import Visual
 import Models
 
+
 formats = ['csv', 'xlsx']
+st.set_page_config(layout="wide")
+
+
+@st.experimental_memo
+def get_img_as_base64(file):
+    with open(file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+
+img = get_img_as_base64("media/back.jpg")
+
+
+page_style = f"""
+<style>
+
+[data-testid="stAppViewContainer"] > .main {{
+background-size: 180%;
+background-position: top left;
+background-repeat: no-repeat;
+background-attachment: local;
+}}
+
+[data-testid="stSidebar"] > div:first-child {{
+# background-image: url("data:media/back/jpg;base64,{img}");
+background-color: #F0F8FF;
+background-position: center; 
+background-repeat: no-repeat;
+background-attachment: fixed;
+}}
+
+[data-testid="stForm"] > div {{
+background-color: #F0F8FF;
+background-position: center; 
+background-repeat: no-repeat;
+background-attachment: fixed;
+}}
+
+</style>
+"""
 
 
 @st.cache
@@ -131,8 +174,16 @@ def init_data():
 
 
 if __name__ == '__main__':
-    st.title('ML_testing')
-    file = st.file_uploader('Upload data', on_change=init_data())
+    with st.sidebar:
+        logo = Image.open('./media/Logo.jpg')
+        logo = logo.resize((200, 200))
+        st.image(logo)
+
+        st.title('ML_testing')
+
+        file = st.file_uploader('Upload data', on_change=init_data())
+    st.markdown(page_style, unsafe_allow_html=True)
+
     if file:
         file_name = file.name
         if 'data' not in st.session_state:
