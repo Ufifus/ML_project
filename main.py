@@ -8,8 +8,12 @@ import Models
 
 
 formats = ['csv', 'xlsx']
-st.set_page_config(layout="wide")
-
+st.set_page_config(
+    page_title="mashine learning project",
+    page_icon="🧊",
+    # layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 @st.experimental_memo
 def get_img_as_base64(file):
@@ -33,14 +37,7 @@ background-attachment: local;
 
 [data-testid="stSidebar"] > div:first-child {{
 # background-image: url("data:media/back/jpg;base64,{img}");
-background-color: #F0F8FF;
-background-position: center; 
-background-repeat: no-repeat;
-background-attachment: fixed;
-}}
-
-[data-testid="stForm"] > div {{
-background-color: #F0F8FF;
+# background-color: #4169E1;
 background-position: center; 
 background-repeat: no-repeat;
 background-attachment: fixed;
@@ -175,10 +172,10 @@ def init_data():
 
 if __name__ == '__main__':
     with st.sidebar:
-        logo = Image.open('./media/Logo.jpg')
-        logo = logo.resize((200, 200))
-        st.image(logo)
+        logo = Image.open('./media/IMG_5498.PNG')
+        # logo = Image.open('./media/logo.PNG')
 
+        st.image(logo, width=300)
         st.title('ML_testing')
 
         file = st.file_uploader('Upload data', on_change=init_data())
@@ -196,6 +193,7 @@ if __name__ == '__main__':
         if 'labels' not in st.session_state:
             st.session_state.labels = labels
 
+        st.subheader('Preproccessing Data')
         with st.form(key='init_data'):
             number_labels = st.multiselect("Number data", st.session_state.data.columns,
                                            [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
@@ -206,6 +204,20 @@ if __name__ == '__main__':
                                                 labels[label]['use'] == True],
                                                key='new_labels2')
             st.form_submit_button(label='Update', on_click=update_labels())
+
+
+        with st.form(key='data_clear'):
+            st.write('Clear rows in table if exists None elements')
+            delete_choices = st.multiselect('Choice that row with clear slots delete',
+                                            [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
+                                             labels[label]['use'] == True])
+            # change_choices = st.multiselect('Choice that row with clear slots fill',
+            #                                 [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
+            #                                  labels[label]['use'] == True])
+            st.form_submit_button('Clear or change data', on_click=delete_rows(delete_choices))
+
+
+        st.subheader('Analize Data')
 
         grafic = st.selectbox('Choise type of grafic', ['Histogram', 'Scatter', 'Heapmap'],
                               on_change=update_params)
@@ -232,16 +244,7 @@ if __name__ == '__main__':
                 params = dict(data=st.session_state.data, label=label, others=other_label, configs=configs)
                 st.form_submit_button('Ploting', on_click=plot_grafic(grafic, **params))
 
-        with st.form(key='data_clear'):
-            st.write('Clear rows in table if exists None elements')
-            delete_choices = st.multiselect('Choice that row with clear slots delete',
-                                            [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
-                                             labels[label]['use'] == True])
-            # change_choices = st.multiselect('Choice that row with clear slots fill',
-            #                                 [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
-            #                                  labels[label]['use'] == True])
-            st.form_submit_button('Clear or change data', on_click=delete_rows(delete_choices))
-
+        st.subheader('Prediction')
         with st.form(key='Ml_model'):
             y_label = st.selectbox('Choice label for predict', [None] + [label for label in st.session_state.data.columns])
             model_label = st.multiselect('Choise able models', [model for model in Models.models])
