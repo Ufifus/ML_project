@@ -11,7 +11,7 @@ formats = ['csv', 'xlsx']
 st.set_page_config(
     page_title="mashine learning project",
     page_icon="🧊",
-    # layout="wide",
+    layout="wide",
     initial_sidebar_state="expanded"
 )
 
@@ -104,6 +104,19 @@ def plot_grafic(name, **kwargs):
         hist = Visual.Scatter()
         hist.get_config()
         fig = hist.plot(kwargs['data'], kwargs['label'], kwargs['others'])
+
+    if name == 'Bubbles':
+        if kwargs['label'][0] == kwargs['label'][1]:
+            st.write('Please choise various labels')
+            return None
+        if not kwargs['others'][0]:
+            hist = Visual.Scatter()
+            hist.get_config()
+            fig = hist.plot(kwargs['data'], kwargs['label'], kwargs['others'][2])
+        else:
+            hist = Visual.Bubbles()
+            fig = hist.plot(kwargs['data'], kwargs['label'], *kwargs['others'])
+
     if name == 'Heapmap':
         heap = Visual.Heapmap()
         fig = heap.plot(kwargs['data'], [label for label in st.session_state.labels \
@@ -187,22 +200,27 @@ if __name__ == '__main__':
             st.session_state.data = load_data(file, file_name)
         if st.session_state.data is None:
             st.session_state.data = load_data(file, file_name)
-        st.dataframe(st.session_state.data.head(20))
+        st.dataframe(st.session_state.data.head(20), width=1500, height=500)
 
         labels = sort_data(st.session_state.data)
         if 'labels' not in st.session_state:
             st.session_state.labels = labels
 
         st.subheader('Preproccessing Data')
+
+        number_col, categorial_col = st.columns(2)
+
         with st.form(key='init_data'):
-            number_labels = st.multiselect("Number data", st.session_state.data.columns,
-                                           [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
-                                            labels[label]['use'] == True],
-                                           key='new_labels1')
-            categorial_labels = st.multiselect("Category data", st.session_state.data.columns,
-                                               [label for label in st.session_state.data.columns if labels[label]['type'] == 0 and \
+            with number_col:
+                number_labels = st.multiselect("Number data", st.session_state.data.columns,
+                                               [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
                                                 labels[label]['use'] == True],
-                                               key='new_labels2')
+                                                key='new_labels1')
+            with categorial_col:
+                categorial_labels = st.multiselect("Category data", st.session_state.data.columns,
+                                                   [label for label in st.session_state.data.columns if labels[label]['type'] == 0 and \
+                                                    labels[label]['use'] == True],
+                                                   key='new_labels2')
             st.form_submit_button(label='Update', on_click=update_labels())
 
 
@@ -219,7 +237,7 @@ if __name__ == '__main__':
 
         st.subheader('Analize Data')
 
-        grafic = st.selectbox('Choise type of grafic', ['Histogram', 'Scatter', 'Heapmap'],
+        grafic = st.selectbox('Choise type of grafic', ['Histogram', 'Scatter', 'Heapmap', 'Bubbles'],
                               on_change=update_params)
 
         # создаем форму с выбором полей и видом графика для визуализации данных
@@ -234,6 +252,19 @@ if __name__ == '__main__':
                     label_x = st.selectbox('Choise x label', st.session_state.data.columns)
                     label_y = st.selectbox('Choise y label', st.session_state.data.columns)
                     other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
+                    label = (label_x, label_y)
+                    configs = (labels[label_x], labels[label_y])
+                elif grafic == 'Bubbles':
+                    label_x = st.selectbox('Choise x label', st.session_state.data.columns)
+                    label_y = st.selectbox('Choise y label', st.session_state.data.columns)
+
+                    bubble_label = st.selectbox('Choise bubble param',
+                                                [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
+                    hover_label = st.selectbox('Choise hover param',
+                                                [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 0])
+                    other_label = st.selectbox('Choise other categorial param',
+                                               [None] + [x for x in st.session_state.data.columns])
+                    other_label = (bubble_label, hover_label, other_label)
                     label = (label_x, label_y)
                     configs = (labels[label_x], labels[label_y])
                 else:

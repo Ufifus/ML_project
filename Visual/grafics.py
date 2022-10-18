@@ -5,6 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+width, height = 1200, 800
+
 """Столбчатая диаграма на распределение элементов по значению"""
 class Histogram:
     def __init__(self):
@@ -22,11 +24,11 @@ class Histogram:
     def plot(self, data, label, others):
         if others is None:
             if self.configs['category']:
-                fig = px.histogram(data, x=label, category_orders=data[label].unique().tolist())
+                fig = px.histogram(data, x=label, category_orders=data[label].unique().tolist(), width=width, height=height)
             else:
-                fig = px.histogram(data, x=label)
+                fig = px.histogram(data, x=label, width=width, height=height)
         else:
-            fig = px.histogram(data, x=label, color=others)
+            fig = px.histogram(data, x=label, color=others, width=width, height=height)
 
         return fig
 
@@ -40,9 +42,27 @@ class Scatter:
 
     def plot(self, data, label, others):
         if others:
-            fig = px.scatter(data, x=label[0], y=label[1], color=others)
+            fig = px.scatter(data, x=label[0], y=label[1], color=others, width=width, height=height)
         else:
-            fig = px.scatter(data, x=label[0], y=label[1])
+            fig = px.scatter(data, x=label[0], y=label[1], width=width, height=height)
+        return fig
+
+
+class Bubbles:
+    def __init__(self):
+        """"""
+
+    def get_configs(self):
+        """"""
+
+    def plot(self, data, label, bubble, hover, others):
+        print(bubble, others)
+        if others is not None:
+            fig = px.scatter(data, x=label[0], y=label[1], color=others, width=width, height=height,
+                             size=bubble, size_max=60, log_x=True, hover_name=hover)
+        else:
+            fig = px.scatter(data, x=label[0], y=label[1], width=width, height=height,
+                             size=bubble, size_max=60, log_x=True, hover_name=hover)
         return fig
 
 
@@ -55,18 +75,19 @@ class Heapmap:
 
     def plot(self, data, useable_labels):
 
-        data = data[useable_labels].corr()
+        data = data[useable_labels].corr().round(2)
         fig = px.imshow(data, labels=dict(x='Корреляционная матрица признаков', color='близость'),
-                        x=useable_labels, y=useable_labels,
+                        x=useable_labels, y=useable_labels, width=width, height=height,
                         text_auto=True)
         return fig
 
     def plot_not_pd(self, data, labels):
 
         fig = px.imshow(data, labels=dict(x='Accuracy', color='Accuracy'),
-                        x=labels, y=labels,
+                        x=labels, y=labels, width=width, height=height,
                         text_auto=True)
         return fig
+
 
 class NaTable:
     def __init__(self):
@@ -81,7 +102,7 @@ class NaTable:
         print(count)
         print('---')
         fig = px.imshow(count, labels=dict(x='Table of clear slots', color='Does not exist'),
-                        text_auto=True)
+                        text_auto=True, width=width, height=height)
         return fig
 
 
@@ -111,5 +132,7 @@ class ROC_Curve:
             yaxis_title='True Positive Rate',
             yaxis=dict(scaleanchor="x", scaleratio=1),
             xaxis=dict(constrain='domain'),
+            width=width,
+            height=height
         )
         return fig
