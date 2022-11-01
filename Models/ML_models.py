@@ -63,8 +63,8 @@ def trainer(X_train, y_train, X_test, y_test, model_name):
     print('test == ', test_accuracy)
     print('Class matrix == ', classification_matrix)
 
-    y_scores = model.predict_proba(X_train)
-    y_onehot = pd.get_dummies(y_train, columns=model.classes_)
+    y_scores = model.predict_proba(X_test)
+    y_onehot = pd.get_dummies(y_test, columns=model.classes_)
 
     return cm_model, test_accuracy, train_accuracy, y_onehot, y_scores, classification_matrix
 
