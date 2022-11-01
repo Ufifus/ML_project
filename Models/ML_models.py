@@ -57,11 +57,68 @@ def trainer(X_train, y_train, X_test, y_test, model_name):
     train_accuracy = accuracy_score(y_train, model.predict(X_train))
     test_accuracy = accuracy_score(y_test, pred)
     table_accuracy = classification_report(y_test, pred)
+    print(table_accuracy.splitlines())
+    classification_matrix = create_classification_report(table_accuracy, y_test, pred)
     print('train == ', train_accuracy)
     print('test == ', test_accuracy)
+    print('Class matrix == ', classification_matrix)
 
     y_scores = model.predict_proba(X_train)
     y_onehot = pd.get_dummies(y_train, columns=model.classes_)
 
-    return cm_model, test_accuracy, train_accuracy, y_onehot, y_scores, table_accuracy
+    return cm_model, test_accuracy, train_accuracy, y_onehot, y_scores, classification_matrix
 
+
+def create_classification_report(table_accuracy, y_test, pred):
+    """Create matrix with columns:
+    'Sensitivity' --> SE = TP/(TP+FN)
+    'Specificity' --> SP = FP/(FP+TN)
+    'PPV' --> PPV = TP/(TP+FP)
+    'NNV' --> NPV = TN/(TN+FN)
+    """
+    uniq_vals = list(set(y_test))
+    dict_results = {k: {'TP': 0, 'TN': 0, 'FP': 0, 'FN': 0} for k in uniq_vals}
+    for label in uniq_vals:
+        for expect, fact in zip(y_test, pred):
+            if label == expect and expect == fact:
+                dict_results[label]['TP'] += 1
+            elif label != expect and label != fact:
+                dict_results[label]['TN'] += 1
+            elif label != expect and label == fact:
+                dict_results[label]['FP'] += 1
+            elif label == expect and label != fact:
+                dict_results[label]['FN'] += 1
+    print(dict_results)
+
+    table_strings = table_accuracy.splitlines()
+    table_strings = [s for s in table_strings if s != '']
+    table_strings[0] = f'{table_strings[0]}    SE    SP    PPV    NPV'
+    classification_matrix = {}
+    for i, (k, v) in enumerate(dict_results.items()):
+        print(k, v)
+        try:
+            SE = v['TP'] / (v['TP'] + v['FN'])
+        except ZeroDivisionError:
+            SE = 0
+        try:
+            SP = v['FP'] / (v['FP'] + v['TN'])
+        except ZeroDivisionError:
+            SP = 0
+        try:
+            PPV = v['TP'] / (v['TP'] + v['FP'])
+        except ZeroDivisionError:
+            PPV = 0
+        try:
+            NPV = v['TN'] / (v['TN'] + v['FN'])
+        except ZeroDivisionError:
+            NPV = 0
+
+        classification_matrix[k] = [round(SE, 2), round(SP, 2), round(PPV, 2), round(NPV, 2)]
+        table_strings[i+1] = f'{table_strings[i+1]}    {round(SE, 2)}   {round(SP, 2)}    {round(PPV, 2)}    {round(NPV, 2)}'
+
+    print(table_strings)
+    #classification_matrix = pd.DataFrame.from_dict(classification_matrix, orient='index', columns=['SE', 'SP', 'PPV', 'NPV'])
+
+    classification_matrix = '\n\n'.join(table_strings)
+    print(classification_matrix)
+    return classification_matrix

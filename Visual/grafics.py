@@ -42,9 +42,11 @@ class Scatter:
 
     def plot(self, data, label, others):
         if others:
-            fig = px.scatter(data, x=label[0], y=label[1], color=others, width=width, height=height)
+            fig = px.scatter(data, x=label[0], y=label[1], color=others, width=width, height=height,
+                             marginal_x="violin", marginal_y="box")
         else:
-            fig = px.scatter(data, x=label[0], y=label[1], width=width, height=height)
+            fig = px.scatter(data, x=label[0], y=label[1], width=width, height=height,
+                             marginal_x="histogram", marginal_y="rug")
         return fig
 
 
@@ -135,4 +137,36 @@ class ROC_Curve:
             width=width,
             height=height
         )
+        return fig
+
+
+class Multy_Ploting:
+    def __init__(self):
+        """"""
+
+    def plot_scatter(self, dtf, labels, color):
+        fig = px.scatter_matrix(dtf,
+                                dimensions=labels,
+                                color=color,
+                                width=width,
+                                height=height)
+
+        return fig
+
+    def plot_diagram(self, dtf, labels, color):
+        fig = px.parallel_categories(dtf,
+                                     dimensions=labels,
+                                     color=color,
+                                     width=width,
+                                     height=height)
+        return fig
+
+    def plot_coordinates(self, dtf, labels, color):
+        fig = px.parallel_coordinates(dtf,
+                                      dimensions=labels,
+                                      color=color,
+                                      width=width,
+                                      height=height,
+                                      color_continuous_scale=px.colors.diverging.Tealrose,
+                                      color_continuous_midpoint=2)
         return fig

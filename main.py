@@ -7,7 +7,7 @@ import Visual
 import Models
 
 
-formats = ['csv', 'xlsx']
+formats = ['csv', 'xlsx', 'xls']
 st.set_page_config(
     page_title="mashine learning project",
     page_icon="🧊",
@@ -52,10 +52,11 @@ def load_data(file, file_name):
     format = file_name.split('.')[-1].lower()
     if format == formats[0]:
         data = pd.read_csv(file)
-    elif format == formats[1]:
+    elif format == formats[1] or format == formats[2]:
         data = pd.read_excel(file)
     else:
         raise Exception('Format is not available', file_name)
+    print(data.columns)
     return data
 
 
@@ -85,7 +86,8 @@ def sort_data(data, labels=None):
             labels[label]['uniq_vals'] = uniqval
         for label, nadata in zip(data.columns, data.isna().sum()):
             labels[label]['na_data'] = nadata
-    labels['ID']['use'] = False
+    if 'ID' in data.columns:
+        labels['ID']['use'] = False
     return labels
 
 
@@ -158,6 +160,23 @@ def delete_rows(delete_labels):
     st.plotly_chart(fig, use_container_width=True)
 
 
+def plot_multy_grafic(grafic, labels, color):
+    print(grafic, labels, color)
+    hist = Visual.Multy_Ploting()
+    if color in labels:
+        st.write('Please select color in not from labels')
+        return None
+    if grafic == 'Multy Scatter':
+        fig = hist.plot_scatter(st.session_state.data, labels, color)
+    if grafic == 'Diagram':
+        fig = hist.plot_diagram(st.session_state.data, labels, color)
+    if grafic == 'Coordinates':
+        fig = hist.plot_coordinates(st.session_state.data, labels, color)
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
 def train_pred(data, y_label, models):
     if y_label is not None:
         data_y = data[y_label].copy()
@@ -170,6 +189,7 @@ def train_pred(data, y_label, models):
             cm_model, test_accuracy, train_accuracy, y_onehot, y_scores, table_accuracy = Models.trainer(X_train, y_train, X_test, y_test, model)
             st.write('Train accuracy = ', round(train_accuracy, 2))
             st.write('Test accuracy = ', round(test_accuracy, 2))
+            st.write(table_accuracy)
             heapmap_acc = Visual.Heapmap()
             fig = heapmap_acc.plot_not_pd(cm_model, data_y.unique().tolist())
             st.plotly_chart(fig, use_container_width=True)
@@ -274,6 +294,37 @@ if __name__ == '__main__':
 
                 params = dict(data=st.session_state.data, label=label, others=other_label, configs=configs)
                 st.form_submit_button('Ploting', on_click=plot_grafic(grafic, **params))
+
+
+        grafic_multy = st.selectbox('Choise type of grafic of more params', ['Multy Scatter', 'Diagram', 'Coordinates'],
+                              on_change=update_params)
+
+        with st.form(key='Plot_multy_grafic'):
+            if grafic_multy == 'Multy Scatter':
+                multy_params = st.multiselect('Choice labels',
+                                              [label for label in st.session_state.labels if
+                                               labels[label]['type'] == 1], [label for label in st.session_state.labels if
+                                               labels[label]['type'] == 1])
+                multy_color = st.selectbox('Choice categorial param',
+                                           [None] + [x for x in st.session_state.data.columns if
+                                            st.session_state.labels[x]['type'] == 0])
+            if grafic_multy == 'Diagram':
+                multy_params = st.multiselect('Choice labels',
+                                              [label for label in st.session_state.labels if labels[label]['type'] == 0],
+                                              [label for label in st.session_state.labels if labels[label]['type'] == 0])
+                multy_color = st.selectbox('Choice categorial param', [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
+            if grafic_multy == 'Coordinates':
+                multy_params = st.multiselect('Choice labels',
+                                              [label for label in st.session_state.labels if
+                                               labels[label]['type'] == 1],
+                                              [label for label in st.session_state.labels if labels[label]['type'] == 1])
+                multy_color = st.selectbox('Choice categorial param',
+                                           [None] + [x for x in st.session_state.data.columns if
+                                                     st.session_state.labels[x]['type'] == 1])
+
+            multy_plot = st.form_submit_button('Ploting', on_click=plot_multy_grafic(grafic_multy, multy_params, multy_color))
+
+
 
         st.subheader('Prediction')
         with st.form(key='Ml_model'):
