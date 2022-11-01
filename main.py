@@ -189,7 +189,7 @@ def train_pred(data, y_label, models):
             cm_model, test_accuracy, train_accuracy, y_onehot, y_scores, table_accuracy = Models.trainer(X_train, y_train, X_test, y_test, model)
             st.write('Train accuracy = ', round(train_accuracy, 2))
             st.write('Test accuracy = ', round(test_accuracy, 2))
-            st.write(table_accuracy)
+            st.dataframe(table_accuracy)
             heapmap_acc = Visual.Heapmap()
             fig = heapmap_acc.plot_not_pd(cm_model, data_y.unique().tolist())
             st.plotly_chart(fig, use_container_width=True)

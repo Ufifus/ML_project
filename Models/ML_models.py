@@ -63,8 +63,8 @@ def trainer(X_train, y_train, X_test, y_test, model_name):
     print('test == ', test_accuracy)
     print('Class matrix == ', classification_matrix)
 
-    y_scores = model.predict_proba(X_train)
-    y_onehot = pd.get_dummies(y_train, columns=model.classes_)
+    y_scores = model.predict_proba(X_test)
+    y_onehot = pd.get_dummies(y_test, columns=model.classes_)
 
     return cm_model, test_accuracy, train_accuracy, y_onehot, y_scores, classification_matrix
 
@@ -91,8 +91,8 @@ def create_classification_report(table_accuracy, y_test, pred):
     print(dict_results)
 
     table_strings = table_accuracy.splitlines()
-    table_strings = [s for s in table_strings if s != '']
-    table_strings[0] = f'{table_strings[0]}    SE    SP    PPV    NPV'
+    table_strings = [[el for el in s.split(' ') if el != ''] for s in table_strings if s != '']
+    table_strings[0] = ['label'] + table_strings[0] + ['SE', 'SP', 'PPV', 'NPV']
     classification_matrix = {}
     for i, (k, v) in enumerate(dict_results.items()):
         print(k, v)
@@ -114,11 +114,10 @@ def create_classification_report(table_accuracy, y_test, pred):
             NPV = 0
 
         classification_matrix[k] = [round(SE, 2), round(SP, 2), round(PPV, 2), round(NPV, 2)]
-        table_strings[i+1] = f'{table_strings[i+1]}    {round(SE, 2)}   {round(SP, 2)}    {round(PPV, 2)}    {round(NPV, 2)}'
+        table_strings[i+1] =table_strings[i+1] + classification_matrix[k]
 
     print(table_strings)
-    #classification_matrix = pd.DataFrame.from_dict(classification_matrix, orient='index', columns=['SE', 'SP', 'PPV', 'NPV'])
+    classification_matrix = pd.DataFrame(table_strings[1:i+2], columns=table_strings[0])
 
-    classification_matrix = '\n\n'.join(table_strings)
     print(classification_matrix)
     return classification_matrix
