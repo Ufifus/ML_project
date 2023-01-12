@@ -228,124 +228,121 @@ if __name__ == '__main__':
     if not file:
         file = 'media/data.xlsx'
         file_name = 'data.xlsx'
-        if 'data' not in st.session_state:
-            st.session_state.data = load_data(file, file_name)
-        if st.session_state.data is None:
-            st.session_state.data = load_data(file, file_name)
-        st.dataframe(st.session_state.data.head(20), width=1500, height=500)
+    if 'data' not in st.session_state:
+        st.session_state.data = load_data(file, file_name)
+    if st.session_state.data is None:
+        st.session_state.data = load_data(file, file_name)
+    st.dataframe(st.session_state.data.head(20), width=1500, height=500)
 
-        labels = sort_data(st.session_state.data)
-        if 'labels' not in st.session_state:
-            st.session_state.labels = labels
+    labels = sort_data(st.session_state.data)
+    if 'labels' not in st.session_state:
+        st.session_state.labels = labels
 
-        st.subheader('Preproccessing Data')
+    st.subheader('Preproccessing Data')
 
-        number_col, categorial_col = st.columns(2)
+    number_col, categorial_col = st.columns(2)
 
-        with st.form(key='init_data'):
-            with number_col:
-                number_labels = st.multiselect("Number data", st.session_state.data.columns,
-                                               [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
+    with st.form(key='init_data'):
+        with number_col:
+            number_labels = st.multiselect("Number data", st.session_state.data.columns,
+                                           [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
+                                            labels[label]['use'] == True],
+                                            key='new_labels1')
+        with categorial_col:
+            categorial_labels = st.multiselect("Category data", st.session_state.data.columns,
+                                               [label for label in st.session_state.data.columns if labels[label]['type'] == 0 and \
                                                 labels[label]['use'] == True],
-                                                key='new_labels1')
-            with categorial_col:
-                categorial_labels = st.multiselect("Category data", st.session_state.data.columns,
-                                                   [label for label in st.session_state.data.columns if labels[label]['type'] == 0 and \
-                                                    labels[label]['use'] == True],
-                                                   key='new_labels2')
-            st.form_submit_button(label='Update', on_click=update_labels())
+                                               key='new_labels2')
+        st.form_submit_button(label='Update', on_click=update_labels())
 
 
-        with st.form(key='data_clear'):
-            st.write('Clear rows in table if exists None elements')
-            delete_choices = st.multiselect('Choice that row with clear slots delete',
-                                            [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
-                                             labels[label]['use'] == True])
-            # change_choices = st.multiselect('Choice that row with clear slots fill',
-            #                                 [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
-            #                                  labels[label]['use'] == True])
-            st.form_submit_button('Clear or change data', on_click=delete_rows(delete_choices))
+    with st.form(key='data_clear'):
+        st.write('Clear rows in table if exists None elements')
+        delete_choices = st.multiselect('Choice that row with clear slots delete',
+                                        [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
+                                         labels[label]['use'] == True])
+        st.form_submit_button('Clear or change data', on_click=delete_rows(delete_choices))
 
 
-        st.subheader('Analize Data')
+    st.subheader('Analize Data')
 
-        grafic = st.selectbox('Choise type of grafic', ['Histogram', 'Scatter', 'Heapmap', 'Bubbles'],
-                              on_change=update_params)
+    grafic = st.selectbox('Choise type of grafic', ['Histogram', 'Scatter', 'Heapmap', 'Bubbles'],
+                          on_change=update_params)
 
-        # создаем форму с выбором полей и видом графика для визуализации данных
-        with st.form(key='visual_data'):
-            if grafic:
-                print(grafic)
-                if grafic == 'Histogram':
-                    label = st.selectbox('Choise labels', st.session_state.data.columns)
-                    other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
-                    configs = labels[label]
-                elif grafic == 'Scatter':
-                    label_x = st.selectbox('Choise x label', st.session_state.data.columns)
-                    label_y = st.selectbox('Choise y label', st.session_state.data.columns)
-                    other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
-                    label = (label_x, label_y)
-                    configs = (labels[label_x], labels[label_y])
-                elif grafic == 'Bubbles':
-                    label_x = st.selectbox('Choise x label', st.session_state.data.columns)
-                    label_y = st.selectbox('Choise y label', st.session_state.data.columns)
+    # создаем форму с выбором полей и видом графика для визуализации данных
+    with st.form(key='visual_data'):
+        if grafic:
+            print(grafic)
+            if grafic == 'Histogram':
+                label = st.selectbox('Choise labels', st.session_state.data.columns)
+                other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
+                configs = labels[label]
+            elif grafic == 'Scatter':
+                label_x = st.selectbox('Choise x label', st.session_state.data.columns)
+                label_y = st.selectbox('Choise y label', st.session_state.data.columns)
+                other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
+                label = (label_x, label_y)
+                configs = (labels[label_x], labels[label_y])
+            elif grafic == 'Bubbles':
+                label_x = st.selectbox('Choise x label', st.session_state.data.columns)
+                label_y = st.selectbox('Choise y label', st.session_state.data.columns)
 
-                    bubble_label = st.selectbox('Choise bubble param',
-                                                [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
-                    hover_label = st.selectbox('Choise hover param',
-                                                [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 0])
-                    other_label = st.selectbox('Choise other categorial param',
-                                               [None] + [x for x in st.session_state.data.columns])
-                    other_label = (bubble_label, hover_label, other_label)
-                    label = (label_x, label_y)
-                    configs = (labels[label_x], labels[label_y])
-                else:
-                    label = None
-                    other_label = None
-                    configs = None
+                bubble_label = st.selectbox('Choise bubble param',
+                                            [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
+                hover_label = st.selectbox('Choise hover param',
+                                           [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 0])
+                other_label = st.selectbox('Choise other categorial param',
+                                           [None] + [x for x in st.session_state.data.columns])
+                other_label = (bubble_label, hover_label, other_label)
+                label = (label_x, label_y)
+                configs = (labels[label_x], labels[label_y])
+            else:
+                label = None
+                other_label = None
+                configs = None
 
-                params = dict(data=st.session_state.data, label=label, others=other_label, configs=configs)
-                st.form_submit_button('Ploting', on_click=plot_grafic(grafic, **params))
+            params = dict(data=st.session_state.data, label=label, others=other_label, configs=configs)
+            st.form_submit_button('Ploting', on_click=plot_grafic(grafic, **params))
 
 
-        grafic_multy = st.selectbox('Choise type of grafic of more params', ['Multy Scatter', 'Diagram', 'Coordinates'],
-                              on_change=update_params)
+    grafic_multy = st.selectbox('Choise type of grafic of more params', ['Multy Scatter', 'Diagram', 'Coordinates'],
+                                  on_change=update_params)
 
-        with st.form(key='Plot_multy_grafic'):
-            if grafic_multy == 'Multy Scatter':
-                multy_params = st.multiselect('Choice labels',
-                                              [label for label in st.session_state.labels if
-                                               labels[label]['type'] == 1], [label for label in st.session_state.labels if
-                                               labels[label]['type'] == 1])
-                multy_color = st.selectbox('Choice categorial param',
-                                           [None] + [x for x in st.session_state.data.columns if
-                                            st.session_state.labels[x]['type'] == 0])
-            if grafic_multy == 'Diagram':
-                multy_params = st.multiselect('Choice labels',
-                                              [label for label in st.session_state.labels if labels[label]['type'] == 0],
-                                              [label for label in st.session_state.labels if labels[label]['type'] == 0])
-                multy_color = st.selectbox('Choice categorial param', [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
-            if grafic_multy == 'Coordinates':
-                multy_params = st.multiselect('Choice labels',
-                                              [label for label in st.session_state.labels if
-                                               labels[label]['type'] == 1],
-                                              [label for label in st.session_state.labels if labels[label]['type'] == 1])
-                multy_color = st.selectbox('Choice categorial param',
-                                           [None] + [x for x in st.session_state.data.columns if
-                                                     st.session_state.labels[x]['type'] == 1])
+    with st.form(key='Plot_multy_grafic'):
+        if grafic_multy == 'Multy Scatter':
+            multy_params = st.multiselect('Choice labels',
+                                          [label for label in st.session_state.labels if
+                                           labels[label]['type'] == 1], [label for label in st.session_state.labels if
+                                            labels[label]['type'] == 1])
+            multy_color = st.selectbox('Choice categorial param',
+                                       [None] + [x for x in st.session_state.data.columns if
+                                        st.session_state.labels[x]['type'] == 0])
+        if grafic_multy == 'Diagram':
+            multy_params = st.multiselect('Choice labels',
+                                          [label for label in st.session_state.labels if labels[label]['type'] == 0],
+                                          [label for label in st.session_state.labels if labels[label]['type'] == 0])
+            multy_color = st.selectbox('Choice categorial param', [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
+        if grafic_multy == 'Coordinates':
+            multy_params = st.multiselect('Choice labels',
+                                          [label for label in st.session_state.labels if
+                                           labels[label]['type'] == 1],
+                                          [label for label in st.session_state.labels if labels[label]['type'] == 1])
+            multy_color = st.selectbox('Choice categorial param',
+                                       [None] + [x for x in st.session_state.data.columns if
+                                             st.session_state.labels[x]['type'] == 1])
 
-            multy_plot = st.form_submit_button('Ploting', on_click=plot_multy_grafic(grafic_multy, multy_params, multy_color))
+        multy_plot = st.form_submit_button('Ploting', on_click=plot_multy_grafic(grafic_multy, multy_params, multy_color))
 
 
 
-        st.subheader('Prediction')
-        with st.form(key='Ml_model'):
-            y_label = st.selectbox('Choice label for predict', [None] + [label for label in st.session_state.labels if labels[label]['type'] == 0] \
-                                   + [label for label in st.session_state.labels if labels[label]['type'] == 1])
-            model_label = st.multiselect('Choise able models', [model for model in Models.models], default=[model for model in Models.models][:2])
-            train = st.form_submit_button('Train', train_pred(st.session_state.data, y_label, model_label))
+    st.subheader('Prediction')
+    with st.form(key='Ml_model'):
+        y_label = st.selectbox('Choice label for predict', [label for label in st.session_state.labels if labels[label]['type'] == 0] \
+                               + [label for label in st.session_state.labels if labels[label]['type'] == 1])
+        model_label = st.multiselect('Choise able models', [model for model in Models.models], default=[model for model in Models.models][:2])
+        train = st.form_submit_button('Train', train_pred(st.session_state.data, y_label, model_label))
 
-        print(st.session_state.data)
+    print(st.session_state.data)
 
 
 
