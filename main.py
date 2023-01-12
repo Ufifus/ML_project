@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import base64
+import pprint
 
 import Visual
 import Models
@@ -49,6 +50,7 @@ background-attachment: fixed;
 
 @st.cache
 def load_data(file, file_name):
+    print(f'Load {file_name}...')
     format = file_name.split('.')[-1].lower()
     if format == formats[0]:
         data = pd.read_csv(file)
@@ -57,7 +59,13 @@ def load_data(file, file_name):
     else:
         raise Exception('Format is not available', file_name)
     print(data.columns)
-    return data
+    if 'ID' in data.columns:
+        return data.drop(['ID'], axis=1)
+    elif'id' in data.columns:
+        return data.drop(['id'], axis=1)
+    else:
+        print('No one id column')
+        return data
 
 
 def sort_data(data, labels=None):
@@ -137,7 +145,7 @@ def update_labels():
             st.session_state.labels[label]['type'] = 0
         else:
             st.session_state.labels[label]['use'] = False
-    print(st.session_state.labels)
+    pprint.pprint(st.session_state.labels)
     return None
 
 
@@ -214,8 +222,12 @@ if __name__ == '__main__':
         file = st.file_uploader('Upload data', on_change=init_data())
     st.markdown(page_style, unsafe_allow_html=True)
 
+
     if file:
         file_name = file.name
+    if not file:
+        file = 'media/data.xlsx'
+        file_name = 'data.xlsx'
         if 'data' not in st.session_state:
             st.session_state.data = load_data(file, file_name)
         if st.session_state.data is None:
@@ -328,8 +340,9 @@ if __name__ == '__main__':
 
         st.subheader('Prediction')
         with st.form(key='Ml_model'):
-            y_label = st.selectbox('Choice label for predict', [None] + [label for label in st.session_state.data.columns])
-            model_label = st.multiselect('Choise able models', [model for model in Models.models])
+            y_label = st.selectbox('Choice label for predict', [None] + [label for label in st.session_state.labels if labels[label]['type'] == 0] \
+                                   + [label for label in st.session_state.labels if labels[label]['type'] == 1])
+            model_label = st.multiselect('Choise able models', [model for model in Models.models], default=[model for model in Models.models][:2])
             train = st.form_submit_button('Train', train_pred(st.session_state.data, y_label, model_label))
 
         print(st.session_state.data)
