@@ -236,13 +236,14 @@ if __name__ == '__main__':
 
     labels = sort_data(st.session_state.data)
     if 'labels' not in st.session_state:
-        st.session_state.labels = labels
+        pass
+    st.session_state.labels = labels
 
     st.subheader('Preproccessing Data')
 
     number_col, categorial_col = st.columns(2)
 
-    with st.form(key='init_data'):
+    with st.form(key='init_data', clear_on_submit=True):
         with number_col:
             number_labels = st.multiselect("Number data", st.session_state.data.columns,
                                            [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
@@ -256,8 +257,9 @@ if __name__ == '__main__':
         st.form_submit_button(label='Update', on_click=update_labels())
 
 
-    with st.form(key='data_clear'):
+    with st.form(key='data_clear', clear_on_submit=True):
         st.write('Clear rows in table if exists None elements')
+        print(st.session_state.labels)
         delete_choices = st.multiselect('Choice that row with clear slots delete',
                                         [label for label in st.session_state.labels if labels[label]['na_data'] != 0 and \
                                          labels[label]['use'] == True])
@@ -270,7 +272,7 @@ if __name__ == '__main__':
                           on_change=update_params)
 
     # создаем форму с выбором полей и видом графика для визуализации данных
-    with st.form(key='visual_data'):
+    with st.form(key='visual_data', clear_on_submit=True):
         if grafic:
             print(grafic)
             if grafic == 'Histogram':
@@ -308,7 +310,7 @@ if __name__ == '__main__':
     grafic_multy = st.selectbox('Choise type of grafic of more params', ['Multy Scatter', 'Diagram', 'Coordinates'],
                                   on_change=update_params)
 
-    with st.form(key='Plot_multy_grafic'):
+    with st.form(key='Plot_multy_grafic', clear_on_submit=True):
         if grafic_multy == 'Multy Scatter':
             multy_params = st.multiselect('Choice labels',
                                           [label for label in st.session_state.labels if
@@ -336,7 +338,7 @@ if __name__ == '__main__':
 
 
     st.subheader('Prediction')
-    with st.form(key='Ml_model'):
+    with st.form(key='Ml_model', clear_on_submit=True):
         y_label = st.selectbox('Choice label for predict', [label for label in st.session_state.labels if labels[label]['type'] == 0] \
                                + [label for label in st.session_state.labels if labels[label]['type'] == 1])
         model_label = st.multiselect('Choise able models', [model for model in Models.models], default=[model for model in Models.models][:2])
