@@ -243,7 +243,7 @@ if __name__ == '__main__':
 
     number_col, categorial_col = st.columns(2)
 
-    with st.form(key='init_data', clear_on_submit=True):
+    with st.form(key='init_data'):
         with number_col:
             number_labels = st.multiselect("Number data", st.session_state.data.columns,
                                            [label for label in st.session_state.data.columns if labels[label]['type'] == 1 and \
@@ -257,7 +257,7 @@ if __name__ == '__main__':
         st.form_submit_button(label='Update', on_click=update_labels())
 
 
-    with st.form(key='data_clear', clear_on_submit=True):
+    with st.form(key='data_clear'):
         st.write('Clear rows in table if exists None elements')
         print(st.session_state.labels)
         delete_choices = st.multiselect('Choice that row with clear slots delete',
@@ -268,11 +268,11 @@ if __name__ == '__main__':
 
     st.subheader('Analize Data')
 
-    grafic = st.selectbox('Choise type of grafic', ['Histogram', 'Scatter', 'Heapmap', 'Bubbles'],
+    grafic = st.selectbox('Choise type of grafic', ['Scatter', 'Histogram', 'Heapmap', 'Bubbles'],
                           on_change=update_params)
 
     # создаем форму с выбором полей и видом графика для визуализации данных
-    with st.form(key='visual_data', clear_on_submit=True):
+    with st.form(key='visual_data'):
         if grafic:
             print(grafic)
             if grafic == 'Histogram':
@@ -280,9 +280,12 @@ if __name__ == '__main__':
                 other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
                 configs = labels[label]
             elif grafic == 'Scatter':
-                label_x = st.selectbox('Choise x label', st.session_state.data.columns)
-                label_y = st.selectbox('Choise y label', st.session_state.data.columns)
-                other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
+                label_x = st.selectbox('Choise x label', [label for label in st.session_state.labels if labels[label]['type'] == 1][::-1] \
+                               + [label for label in st.session_state.labels if labels[label]['type'] == 0])
+                label_y = st.selectbox('Choise y label', [label for label in st.session_state.labels if labels[label]['type'] == 1] \
+                               + [label for label in st.session_state.labels if labels[label]['type'] == 0])
+                other_label = st.selectbox('Choise other categorial param', [label for label in st.session_state.labels if labels[label]['type'] == 0] \
+                               + [label for label in st.session_state.labels if labels[label]['type'] == 1] + [None])
                 label = (label_x, label_y)
                 configs = (labels[label_x], labels[label_y])
             elif grafic == 'Bubbles':
@@ -307,31 +310,32 @@ if __name__ == '__main__':
             st.form_submit_button('Ploting', on_click=plot_grafic(grafic, **params))
 
 
-    grafic_multy = st.selectbox('Choise type of grafic of more params', ['Multy Scatter', 'Diagram', 'Coordinates'],
+    grafic_multy = st.selectbox('Choise type of grafic of more params', ['Diagram', 'Multy Scatter', 'Coordinates'],
                                   on_change=update_params)
 
-    with st.form(key='Plot_multy_grafic', clear_on_submit=True):
+    with st.form(key='Plot_multy_grafic'):
         if grafic_multy == 'Multy Scatter':
             multy_params = st.multiselect('Choice labels',
                                           [label for label in st.session_state.labels if
                                            labels[label]['type'] == 1], [label for label in st.session_state.labels if
                                             labels[label]['type'] == 1])
             multy_color = st.selectbox('Choice categorial param',
-                                       [None] + [x for x in st.session_state.data.columns if
-                                        st.session_state.labels[x]['type'] == 0])
+                                       [x for x in st.session_state.data.columns if
+                                        st.session_state.labels[x]['type'] == 0] + [None])
         if grafic_multy == 'Diagram':
             multy_params = st.multiselect('Choice labels',
                                           [label for label in st.session_state.labels if labels[label]['type'] == 0],
                                           [label for label in st.session_state.labels if labels[label]['type'] == 0])
-            multy_color = st.selectbox('Choice categorial param', [None] + [x for x in st.session_state.data.columns if st.session_state.labels[x]['type'] == 1])
+            multy_color = st.selectbox('Choice categorial param', [x for x in st.session_state.data.columns
+                                                                   if st.session_state.labels[x]['type'] == 1] + [None])
         if grafic_multy == 'Coordinates':
             multy_params = st.multiselect('Choice labels',
                                           [label for label in st.session_state.labels if
                                            labels[label]['type'] == 1],
                                           [label for label in st.session_state.labels if labels[label]['type'] == 1])
             multy_color = st.selectbox('Choice categorial param',
-                                       [None] + [x for x in st.session_state.data.columns if
-                                             st.session_state.labels[x]['type'] == 1])
+                                       [x for x in st.session_state.data.columns if
+                                             st.session_state.labels[x]['type'] == 1] + [None])
 
         multy_plot = st.form_submit_button('Ploting', on_click=plot_multy_grafic(grafic_multy, multy_params, multy_color))
 
@@ -345,7 +349,3 @@ if __name__ == '__main__':
         train = st.form_submit_button('Train', train_pred(st.session_state.data, y_label, model_label))
 
     print(st.session_state.data)
-
-
-
-
