@@ -280,10 +280,10 @@ if __name__ == '__main__':
                 other_label = st.selectbox('Choise other categorial param', [None] + [x for x in st.session_state.data.columns])
                 configs = labels[label]
             elif grafic == 'Scatter':
-                label_x = st.selectbox('Choise x label', [label for label in st.session_state.labels if labels[label]['type'] == 1][::-1] \
-                               + [label for label in st.session_state.labels if labels[label]['type'] == 0])
+                label_x = st.selectbox('Choise x label', [label for label in st.session_state.labels if labels[label]['type'] == 1] \
+                               + [label for label in st.session_state.labels if labels[label]['type'] == 0], index=0)
                 label_y = st.selectbox('Choise y label', [label for label in st.session_state.labels if labels[label]['type'] == 1] \
-                               + [label for label in st.session_state.labels if labels[label]['type'] == 0])
+                               + [label for label in st.session_state.labels if labels[label]['type'] == 0], index=1)
                 other_label = st.selectbox('Choise other categorial param', [label for label in st.session_state.labels if labels[label]['type'] == 0] \
                                + [label for label in st.session_state.labels if labels[label]['type'] == 1] + [None])
                 label = (label_x, label_y)
